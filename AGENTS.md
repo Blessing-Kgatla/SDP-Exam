@@ -135,7 +135,8 @@ Qoder runs on the user's computer, so what can be verified depends on it. A Wind
 | Setting | Value | Why |
 |---|---|---|
 | Model | **DeepSeek-V4-Pro** (~0.5×) | The fastest measured of Qoder's strong coding models: about 100 tokens/sec in an October 2026 test, where it was quickest of the four flagships. It is also one of the cheapest. On Terminal-Bench 2.1 (agentic terminal work) it scores 87.9, against 88.3 for Kimi K3, 88.2 for GLM-5.3 and 86.6 for Qwen3.8-Max. |
-| Thinking | On, default effort | Multi-step coding needs reasoning. Raise the effort only for hard problems, because higher effort costs more credits. |
+| Thinking | On, effort **high** | Multi-step coding needs reasoning. Qoder defaults to `max`, which is slower and uses more credits; switch to `max` only for a hard problem. |
+| Context | **200K** (default) | Faster and cheaper per message. Use 400K or 1M only if the agent loses track in a very large codebase. |
 | If it's missing from your selector | **Auto** (~0.5×, Qoder's recommended default) or **Fast** (~0.8×, tuned for quick responses on everyday code) | |
 
 **Evidence caveat:** the benchmark figures are mostly vendor-reported, the speed figure comes from a single test, and none of it was measured inside Qoder. DeepSeek prices also follow peak/off-peak rates. Use it for a day; if its code quality disappoints on your project, use §3.3.
@@ -144,7 +145,7 @@ Qoder runs on the user's computer, so what can be verified depends on it. A Wind
 
 | Task | Pick | Credits |
 |---|---|---|
-| Planning, architecture, hard multi-file bugs, security review | **Ultimate** tier | ~2× |
+| Planning, architecture, hard multi-file bugs, security review | **Ultimate** tier, or **Kimi-K3.1-Pro** at `max` thinking if your plan doesn't list Ultimate | ~2× / ~1.0× |
 | Building features, fixing bugs (default) | **DeepSeek-V4-Pro** | ~0.5× |
 | UI-heavy front-end work where the look matters most | **Kimi-K3.1-Pro**: Kimi K3 led Arena WebDev, but it's slower; K3.1 is untested independently | ~1.0× |
 | Quick questions, small edits, unit tests | **Efficient** tier (free for paid users for a limited time) or **DeepSeek-Flash** | 0× / ~0.1× |
@@ -152,13 +153,14 @@ Qoder runs on the user's computer, so what can be verified depends on it. A Wind
 
 ### 3.3 When to switch
 
-- After two or three genuinely different failed attempts at the same problem (§9.6), switch that chat to **Ultimate**.
-- If DeepSeek-V4-Pro's code quality disappoints, try **Qwen3.8-Max** (~0.5×). It leads SWE-bench Pro (67.7 vs 55.4, Qwen-reported) but generated output at roughly half the speed in third-party measurements. **Auto** is the other fallback.
+- After two or three genuinely different failed attempts at the same problem (§9.6), switch that chat to **Ultimate**, or to **Kimi-K3.1-Pro** at `max` thinking if Ultimate isn't offered.
+- If DeepSeek-V4-Pro's code quality disappoints, try **Qwen3.8-Max** (~0.5×; shown at 0.2× in November 2026, likely a promotion). It leads SWE-bench Pro (67.7 vs 55.4, Qwen-reported) but generated output at roughly half the speed in third-party measurements. **Auto** is the other fallback.
 - Avoid **GLM-5.3** when speed matters: it always reasons and produced the most output per task in testing.
 
 ### 3.4 Notes
 
 - Out of credits: Qoder falls back to free basic models with daily and monthly limits.
+- Premium models newer than this research (for example Sonus at 8× and Cantus at 4×) are untested here. Use them only when a task justifies the cost.
 - One source reported that DeepSeek retired V4 Pro from its own API in September 2026. Qoder still lists it; if it disappears from your selector, use Auto.
 - If the agent reports "done" without test output, point it at §7.1 step 7, or move up a tier.
 
