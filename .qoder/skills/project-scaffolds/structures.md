@@ -112,7 +112,7 @@ npx create-next-app@latest my-web-app --ts --app --src-dir --eslint --import-ali
 cd my-web-app
 ```
 
-Current create-next-app also writes an `AGENTS.md` into the new project by default (`--agents-md`). Merge its framework rules into the repository's root `AGENTS.md`; Coder Agents reads instruction files only at the top level of the working directory, not in subfolders.
+Current create-next-app also writes an `AGENTS.md` into the new project by default (`--agents-md`). Merge its framework rules into the repository's root `AGENTS.md` and delete the generated copy. Keep a single `AGENTS.md`, at the root of the folder opened in Qoder.
 
 ### Structure C — Django + HTMX administration/enterprise app
 
@@ -211,7 +211,7 @@ flutter pub add drift drift_flutter dev:drift_dev dev:build_runner
 dart run build_runner build --delete-conflicting-outputs   # regenerate after every table change
 ```
 
-*Important:* Open the database with `drift_flutter`'s `driftDatabase(...)` helper (or the documented executor for each target platform). Installing packages alone does not complete DB initialization. Add schema versioning and `MigrationStrategy` before the first release. iOS builds and signing need macOS/Xcode, so a Linux Coder workspace can run `flutter analyze`, `flutter test` and Android/web builds only; say so instead of claiming iOS verification.
+*Important:* Open the database with `drift_flutter`'s `driftDatabase(...)` helper (or the documented executor for each target platform). Installing packages alone does not complete DB initialization. Add schema versioning and `MigrationStrategy` before the first release. iOS builds and signing need macOS/Xcode. On Windows or Linux you can run `flutter analyze`, `flutter test` and Android/web builds only, so say that instead of claiming iOS verification.
 
 ### Structure E — Expo / React Native social-mobile app
 
@@ -254,7 +254,7 @@ Expo Router provides file-based navigation. Managed backend services (e.g., Supa
 npx create-expo-app@latest my-social-app --yes
 ```
 
-Native iOS builds need macOS or a cloud build service (for example EAS Build, which needs the owner's account). In a Linux workspace, verify with type-checks, unit tests and the web/Android targets, and report iOS as unverified.
+Native iOS builds need macOS or a cloud build service (for example EAS Build, which needs the owner's account). On Windows or Linux, verify with type-checks, unit tests and the web/Android targets, and report iOS as unverified.
 
 ### Structure F — React + Vite local-first browser app
 
@@ -339,7 +339,7 @@ Frontend handles interface and state; native Rust host handles OS-level actions 
 npm create tauri-app@latest my-desktop-app -- --template react-ts --manager npm --identifier com.example.mydesktopapp --yes
 ```
 
-Building needs Rust plus the OS's WebView/system libraries. Windows `.msi`/`.exe` and macOS `.app`/`.dmg` bundles, code signing and notarization must be built on (or cross-built for) those OSes. A Linux workspace verifies the Linux build and the frontend; report other platforms as unverified. Grant the minimum Tauri capabilities/permissions in `src-tauri/capabilities/`.
+Building needs Rust plus the OS's WebView/system libraries. Windows `.msi`/`.exe` and macOS `.app`/`.dmg` bundles, code signing and notarization must be built on (or cross-built for) those OSes. Verify the build for the OS you are on plus the frontend, and report the other platforms as unverified. Grant the minimum Tauri capabilities/permissions in `src-tauri/capabilities/`.
 
 ### Structure H — Godot game
 
@@ -372,7 +372,7 @@ my-game/
 └── project.godot
 ```
 
-Use Godot's native save/config resource/file APIs for simple game state. Add SQLite only if complex searchable records justify it. Keep rendering, game logic, data and UI separate. Test game performance and input on the actual target device. Godot has no built-in test runner: use GUT or gdUnit4 for `tests/`, and run them headless (`godot --headless ...`). Exports need the matching export templates installed. Godot is usually not present in a workspace, so check `godot --version` before promising builds.
+Use Godot's native save/config resource/file APIs for simple game state. Add SQLite only if complex searchable records justify it. Keep rendering, game logic, data and UI separate. Test game performance and input on the actual target device. Godot has no built-in test runner: use GUT or gdUnit4 for `tests/`, and run them headless (`godot --headless ...`). Exports need the matching export templates installed. Godot is often not installed or not on `PATH`, so check `godot --version` before promising builds.
 
 ### Shared web styling layout
 

@@ -219,12 +219,12 @@ These are starting references. Confirm current framework version, licensing, req
 - Playwright: https://playwright.dev/docs/intro
 - Vitest: https://vitest.dev/
 
-### Coder Agents
+### Qoder
 
-- Coder Agents overview: https://coder.com/docs/ai-coder/agents
-- Models and per-context overrides: https://coder.com/docs/ai-coder/agents/models
-- Extending agents (AGENTS.md, skills, `.mcp.json`): https://coder.com/docs/ai-coder/agents/extending-agents
-- Claude models overview: https://platform.claude.com/docs/en/about-claude/models/overview
+- Rules and AGENTS.md: https://docs.qoder.com/user-guide/rules
+- Skills: https://docs.qoder.com/extensions/skills
+- Model selector: https://docs.qoder.com/user-guide/chat/model-tier-selector
+- Documentation index: https://docs.qoder.com/llms.txt
 
 ### Quality, security, UX and public services
 

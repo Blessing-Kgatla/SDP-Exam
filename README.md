@@ -1,43 +1,44 @@
-# SDP-Exam: Coder Agents playbook
+# SDP-Exam: Qoder IDE agent playbook
 
-Instructions and on-demand skills for an AI coding agent running in [Coder Agents](https://coder.com/docs/ai-coder/agents). The agent plans, designs, builds, tests and ships web, mobile, desktop and game projects.
+Instructions and on-demand skills for the AI agent in [Qoder IDE](https://docs.qoder.com/). The agent plans, designs, builds, tests and ships web, mobile, desktop and game projects.
 
 ```text
-AGENTS.md                  # Core playbook. Coder puts it in the agent's system prompt (must stay under 64 KiB)
-.agents/skills/
+AGENTS.md                  # Core playbook; Qoder reads it from the project root
+.qoder/skills/
 ├── product-categories/    # 40 category design briefs, palettes + contrast audit, stacks, risks
 ├── project-scaffolds/     # Repo layouts A–H, non-interactive scaffold commands, test/lint tooling
 └── planning-kit/          # Specs, beta/release plans, ops, cost, legal, docs templates
-install.sh                 # Installs everything into ~/.coder/ (dotfiles mode)
-scripts/validate.py        # Checks size limits and skill frontmatter before you commit
+install.sh                 # Copies the playbook into another project (or your user-level skills)
+scripts/validate.py        # Checks Qoder's limits and skill frontmatter before you commit
 ```
 
-## Use it in Coder: pick one
+## Start a project in Qoder IDE
 
-**A. In one project.** Keep `AGENTS.md` and `.agents/` at the top level of the project's repository, and make that repository the workspace's working directory. Coder reads `AGENTS.md` only at the top level of the working directory, not in subfolders, and loads skills from `.agents/skills/`. To use the playbook in another project, copy both into that repo's root.
+1. On Qoder's start screen, click **Clone repo** and paste `https://github.com/Blessing-Kgatla/SDP-Exam`. Choose a parent folder, and Qoder opens the cloned folder. (Already cloned? Use **Open project** or **File → Open Folder…** and pick the `SDP-Exam` folder itself, the one that contains `AGENTS.md`.)
+2. Check the skills loaded: in the chat panel, type `/`. You should see `product-categories`, `project-scaffolds` and `planning-kit`. If not, restart Qoder.
+3. Switch the chat to **Agent** mode, pick a model (see `AGENTS.md` §3), and paste your project brief. The agent builds the project inside this repo.
 
-**B. In every workspace (dotfiles).** Use this repository as your Coder dotfiles repo, either through the template's dotfiles prompt or by running:
+## Use the playbook in another project
+
+From this folder, in Git Bash:
 
 ```bash
-coder dotfiles https://github.com/Blessing-Kgatla/SDP-Exam
+sh install.sh /c/Users/<you>/path/to/other-project
 ```
 
-Coder runs `install.sh`, which copies `AGENTS.md` to `~/.coder/AGENTS.md` and the skills to `~/.coder/skills/`. Then every project gets the playbook, with nothing added to its repo.
+This copies `AGENTS.md` and `.qoder/skills/` into that project. To make the skills available in **every** project instead, run `sh install.sh --user`; it copies them to `~/.qoder/skills/`. Each project still needs its own `AGENTS.md`.
 
-Use A or B for a given workspace, not both. With both, Coder loads two copies of the playbook.
+## Model choice
 
-**Check it loaded:** start a new chat and open its context list. `AGENTS.md` should be included (not "oversize"), and the three skills should show as valid.
-
-## Model setup (Coder admins)
-
-Configure **Admin settings → AI → Models** as described in `AGENTS.md` §3. The default is `claude-sonnet-5-5` at `medium` effort, with Claude Haiku 5.5 for explore sub-agents and titles. Leave **Thinking Budget Tokens** and the sampling fields (Temperature, Top P, Top K) empty, because current Claude models reject them.
+See `AGENTS.md` §3 for which Qoder tier or model to use for building, planning and quick tasks.
 
 ## Editing
 
-- Put detailed or rarely needed material in a skill's reference files, not in `AGENTS.md`. Every byte of `AGENTS.md` is sent on every turn, and Coder drops the whole file at 64 KiB.
-- A skill's `name` in `SKILL.md` must be kebab-case and match its folder name, or Coder marks the skill invalid.
+- `AGENTS.md` goes into every request, so keep it lean. Put detailed or rarely needed material in a skill's reference files.
+- Qoder truncates active rules (`AGENTS.md` plus anything in `.qoder/rules/`) beyond 100,000 characters.
+- A skill's `name` must be lowercase letters, numbers and hyphens, and should match its folder name. Its `description` (max 1,024 characters) is how the agent decides when to use it.
 - Run the check before committing:
 
 ```bash
-python3 scripts/validate.py
+python scripts/validate.py
 ```

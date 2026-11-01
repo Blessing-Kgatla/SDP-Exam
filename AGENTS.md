@@ -1,8 +1,8 @@
-# AGENTS.md — Product Planning, Design & Engineering Playbook (Coder Agents edition)
+# AGENTS.md — Product Planning, Design & Engineering Playbook (Qoder IDE edition)
 
 > **Purpose:** Reusable, project-agnostic instructions for an AI coding/design agent that plans, designs, builds, tests, launches and maintains websites, web apps, mobile apps, desktop software, games and online services.
 >
-> **For Coder Agents:** The file must be named exactly `AGENTS.md`. Put it at the top level of the workspace working directory (normally the repo root), or at `~/.coder/AGENTS.md` for every workspace. Coder does not read instruction files in subfolders. It also includes **no content** from any instruction file over **64 KiB**, so keep this file under that limit (`wc -c AGENTS.md`). The detailed reference material lives in three skills in `.agents/skills/` (or `~/.coder/skills/`), which you load on demand with `read_skill`:
+> **For Qoder IDE:** Keep this file named `AGENTS.md` at the root of the folder opened in Qoder. Rules in `.qoder/rules/` override it, and Qoder truncates active rules beyond 100,000 characters in total, so keep it lean (check with `python scripts/validate.py`). The detailed reference material lives in three skills in `.qoder/skills/`. Load them on demand:
 >
 > | Skill | Load it when |
 > |---|---|
@@ -10,7 +10,7 @@
 > | `project-scaffolds` | You are creating a project or module, or choosing test/lint tooling |
 > | `planning-kit` | You are writing a plan, spec, beta/release plan, cost model or docs set |
 >
-> **Model setup** for whoever configures Coder is in §3.
+> **Model choice** (which Qoder tier or model to use for what) is in §3.
 >
 > **Core philosophy:** Build the simplest reliable product that solves the real user problem. Deliver distinctive, purposeful, accessible design instead of template-like "AI-generated" interfaces. Optimize for correctness, usefulness, maintainability, privacy, performance and operating cost.
 
@@ -27,7 +27,7 @@
 | Question or explanation | Answer it. Don't edit files unless asked. |
 | Bug fix or small change | §7 task loop only. No planning documents. |
 | Feature in an existing product | Short spec (outcome, acceptance criteria, states, permissions), then the §7 loop. |
-| New product or major rebuild | Classify (§4), load the skills, propose a plan via Plan Mode / `propose_plan` (§1.4), then build a vertical slice (§12.1). |
+| New product or major rebuild | Classify (§4), load the skills, propose a plan and wait for approval (§1.4, §2.3), then build a vertical slice (§12.1). |
 
 ---
 
@@ -87,43 +87,42 @@ Scale the output to the project level in §12.1. Don't dump a large architecture
 
 ---
 
-## 2. Working inside Coder Agents
+## 2. Working inside Qoder IDE
 
 ### 2.1 How the environment works
 
-- Your loop runs in Coder's control plane. File and shell tools (`read_file`, `write_file`, `edit_files`, `execute`) act on the workspace attached to the chat. If the task needs files or commands and no workspace is attached, pick a template with `list_templates` (use `read_template` only when parameters or presets matter). Then call `create_workspace` once; it returns an existing workspace instead of creating a duplicate.
-- Instructions load from the **top level** of the working directory and `~/.coder/` only. If a subproject has its own `AGENTS.md`/`README`, read it yourself with `read_file`.
-- Skills load with `read_skill` / `read_skill_file`. Load the relevant skill before doing that kind of work. Don't reconstruct its content from memory.
-- MCP servers come from `.mcp.json` at the working-directory root.
-- Chats are stored in Coder and can be shared. **Never print secrets** into tool output or messages.
-- The workspace can be stopped or rebuilt. Commit work regularly. Anything installed outside the repo may disappear; note manual installs so the template can be updated.
+- Qoder runs on the developer's own computer. In **Agent** mode you edit files and run terminal commands in the folder opened in Qoder. **Ask** mode answers without changing code. **Experts Mode** runs a lead agent with parallel experts (researcher, full-stack engineer, QA, code reviewer, UI operator, debug engineer); it plans first and runs after the user confirms.
+- Instructions: this `AGENTS.md` loads from the root of the opened project folder. Rules in `.qoder/rules/` override it when they conflict, and Qoder truncates active rules beyond **100,000 characters** in total. Keep one `AGENTS.md`, at the root. If a subproject has its own README or instructions, open and read them yourself.
+- Skills live in `.qoder/skills/<name>/SKILL.md` (project) or `~/.qoder/skills/` (all projects). Load the relevant skill before doing that kind of work, and open its reference files as needed. Don't reconstruct their content from memory. The user can also invoke one with `/skill-name`. New skills appear after an IDE restart.
+- Custom agents (`.qoder/agents/<name>.md`) and MCP servers (Settings → MCP) are optional. Each MCP tool call needs the user's confirmation.
+- Prompts and code are sent to cloud models. **Never print secrets** into commands, output or chat, and never ask the user to paste them.
 
 ### 2.2 Running commands
 
-- **Everything non-interactive:** pass `--yes`/`-y`/`--no-interactive`, and set `CI=1`, `GIT_EDITOR=true`, `PAGER=cat` / `git --no-pager`. A command that waits for input hangs the session.
-- **Long-running processes** (dev servers, watchers, emulators): start them in the background with output to a log file (`nohup npm run dev > /tmp/dev.log 2>&1 &`). Poll readiness (`curl -sf localhost:PORT`), read the log, and stop the process when finished. Never run a non-terminating command in the foreground.
-- Bound slow commands with `timeout`. Keep output small (`| tail -50`, `--reporter=dot`).
-- Check toolchains before promising work (`node -v`, `python3 --version`, `flutter --version`, `cargo --version`, `godot --version`). Install missing tools only with official installers/package managers, never by piping an unknown script to a shell.
-- Tell the user the port and start command of anything they should open (Coder port forwarding).
+- **Check the shell first.** On Windows, Qoder's terminal is Git Bash or PowerShell 7 (`pwsh`). Write commands for the active shell; don't use Linux-only syntax (`nohup`, `&`, `export`) in PowerShell. When unsure, run `echo $PSVersionTable` or `echo $SHELL`.
+- By default the user must click **Run** for each command. Keep commands few, purposeful and explained, so approval is easy. Never chain an unrelated destructive step onto a harmless one.
+- **Everything non-interactive:** pass `--yes`/`-y`/`--no-interactive` and set `CI=1` (`$env:CI=1` in PowerShell). A command that waits for input stalls the task.
+- **Long-running processes** (dev servers, watchers, emulators): start them so they don't block the agent. Use a separate terminal, or `Start-Process` in PowerShell, or `cmd > dev.log 2>&1 &` in Git Bash. Poll readiness (`curl -s http://localhost:PORT`), read the log, and stop the process when finished.
+- Bound slow commands and keep output small (`| tail -50`, `--reporter=dot`).
+- Check toolchains before promising work (`node -v`, `python --version`, `flutter --version`, `cargo --version`, `godot --version`). Install missing tools only with official installers or package managers (`winget`, `npm`, `pip`), never by piping an unknown script to a shell. Ask before installing anything system-wide.
+- Tell the user the URL/port and start command of anything they should open.
 
 ### 2.3 Plans, questions and continuity
 
-- For Level 2–3 work or any change touching many files, investigate first and present the plan with Plan Mode / `propose_plan` before editing. Plans live under `.coder/plans/`.
-- Use `ask_user_question` only for decisions that change correctness, safety, money, data, business rules or architecture. Offer concrete options with a recommendation. Otherwise choose a sensible default and record it. Chats started through the API may have nobody watching, so never stall waiting.
-- Long chats get compacted. For multi-step work, keep `.coder/plans/<task>.md` current with: goal, acceptance criteria, decisions/assumptions, done, next, and the exact build/test commands. Re-read it after compaction or when resuming.
+- For Level 2–3 work or any change touching many files, investigate first. Then present the plan and wait for approval before editing. Use Qoder's planning/Spec feature where available; otherwise save the plan to `docs/plans/<topic>.md`.
+- Ask questions only for decisions that change correctness, safety, money, data, business rules or architecture. Offer concrete options with a recommendation. Otherwise choose a sensible default and record it.
+- Long chats lose detail. For multi-step work, keep `docs/plans/<topic>.md` current with: goal, acceptance criteria, decisions/assumptions, done, next, and the exact build/test commands. Re-read it when resuming or starting a new chat. Durable preferences belong in Qoder Memory (the user can ask you to remember them in Agent mode).
 - Give brief progress updates during long tool-heavy stretches. End with a recap that stands on its own (§12.3).
 
-### 2.4 Sub-agents
+### 2.4 Experts and custom agents
 
-- Use **`explore`** sub-agents for read-heavy work: surveying a codebase, finding usages, reading docs. Use **`general`** sub-agents for independent, parallelizable chunks with clear file boundaries. Use **`computer_use`** (when enabled) for visual checks of a running UI.
-- A sub-agent starts with none of your context. Give it the goal, relevant paths, constraints, the expected output format and, for explore agents, "do not modify files".
-- Never let two sub-agents edit the same files. Sub-agents can't create workspaces or spawn sub-agents.
-- Review and re-verify sub-agent results before reporting them. Don't spawn sub-agents for work you can finish in a few tool calls; each one costs tokens.
-- If you are stuck on a hard architecture or debugging problem after your own attempts (§9.6), tell the user that switching this chat to a stronger model (§3.3) may help. You cannot change your own model.
+- Use Experts Mode (or custom agents in `.qoder/agents/`) for work that splits cleanly. Examples: research in parallel with implementation, a QA or code-review pass, UI checks. Give each expert or agent the goal, relevant paths, constraints and the expected output.
+- Never let two agents edit the same files. Review and re-verify delegated results before reporting them. Don't delegate work you can finish in a few steps; parallel agents cost more credits.
+- If you are stuck on a hard architecture or debugging problem after your own attempts (§9.6), tell the user that switching to a stronger model (§3.3) may help. You cannot change your own model.
 
-### 2.5 What a Linux workspace cannot verify
+### 2.5 What this machine can't verify
 
-A typical Coder workspace is a Linux container with no display server, no GPU, usually no Android emulator (no KVM), and no macOS or Windows. It cannot build or sign iOS/macOS apps or produce Windows installers, and it cannot test real GPS, sensors, push notifications, Bluetooth or app-store review. Verify everything that *can* run there: type-checks, unit/integration tests, web and Android/Linux builds, headless-browser E2E. List everything else as **"not verified: needs <device/OS/service>"**.
+Qoder runs on the user's computer, so what can be verified depends on it. A Windows PC cannot build or sign iOS/macOS apps. Android emulators need hardware virtualization and the Android SDK. Real GPS, sensors, push notifications, Bluetooth and app-store review need real devices or accounts. Verify everything that *can* run locally: type-checks, unit/integration tests, web, Android and desktop builds for this OS, and browser E2E. List everything else as **"not verified: needs <device/OS/service>"**.
 
 ---
 

@@ -14,7 +14,7 @@ Use this after you have classified the product (AGENTS.md §4). Look up the **pr
 | Minimal stack, feature modules, repository structure letter | `stacks.md` | 40 stack recommendations with notes (payments by country, AI features) |
 | What usually goes wrong in this category | `risks.md` | Category risk table and AI-feature documentation checklist |
 
-Read files with `read_skill_file`. Load only the files you need for the current step.
+Open the files in this skill's folder (`.qoder/skills/product-categories/`) as needed. Load only the files you need for the current step.
 
 ## How to apply
 
