@@ -1,4 +1,4 @@
-# SDP Exam Agent: Coder Agents playbook
+# SDP-Exam: Coder Agents playbook
 
 Instructions and on-demand skills for an AI coding agent running in [Coder Agents](https://coder.com/docs/ai-coder/agents). The agent plans, designs, builds, tests and ships web, mobile, desktop and game projects.
 
@@ -19,7 +19,7 @@ scripts/validate.py        # Checks size limits and skill frontmatter before you
 **B. In every workspace (dotfiles).** Use this repository as your Coder dotfiles repo, either through the template's dotfiles prompt or by running:
 
 ```bash
-coder dotfiles https://github.com/Blessing-Kgatla/SDP-Exam-agent
+coder dotfiles https://github.com/Blessing-Kgatla/SDP-Exam
 ```
 
 Coder runs `install.sh`, which copies `AGENTS.md` to `~/.coder/AGENTS.md` and the skills to `~/.coder/skills/`. Then every project gets the playbook, with nothing added to its repo.
