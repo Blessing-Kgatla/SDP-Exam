@@ -126,54 +126,41 @@ Qoder runs on the user's computer, so what can be verified depends on it. A Wind
 
 ---
 
-## 3. Recommended model configuration for Coder Agents (for admins)
+## 3. Model choice in Qoder IDE
 
-*This section is for whoever configures Coder (**Admin settings → AI → Providers / Models**, and **Overrides** per organization). The agent cannot change its own model. Model IDs and prices are as of November 2026. Check the [Coder models docs](https://coder.com/docs/ai-coder/agents/models) and [Claude models overview](https://platform.claude.com/docs/en/about-claude/models/overview) before changing them.*
+*For the person using Qoder: pick the model from the selector in the chat input box. The agent cannot change its own model. Credit multipliers are from Qoder's docs (November 2026); the rate shown in the selector is the current one. Qoder doesn't offer Claude, GPT or Gemini. Custom models with your own API key (Settings → Models) support only Alibaba Model Studio, DeepSeek, Z.ai, Kimi, MiniMax and Xiaomi MIMO, and they bill your provider account, not Qoder credits.*
 
-### 3.1 Default: Claude Sonnet 5.5 at `medium` effort, the best balance of quality and speed
+### 3.1 Default for building: DeepSeek-V4-Pro with thinking on
 
-| Coder field | Value | Why |
+| Setting | Value | Why |
 |---|---|---|
-| Provider | Anthropic (Bedrock / Google Cloud also work; on Bedrock the ID is `anthropic.claude-sonnet-5-5`) | |
-| Model Identifier | `claude-sonnet-5-5` | Exact string, no date suffix |
-| Display Name | `Claude Sonnet 5.5` | |
-| Context Limit | `1000000` | Native 1M-token window. Enable Coder's "1M Context Window" toggle only if Coder rejects a limit above 200K without it. |
-| Compression Threshold | `30` | Compacts at ~300K tokens. A smaller live context keeps turns fast and cheap; raise it only if long tasks lose track. |
-| Max Output Tokens | `64000` | Thinking counts toward this; long agentic turns need room. |
-| Effort | `medium` | Anthropic's recommended starting point for agentic coding on this model. `low` sometimes skips verification; reserve `high` for hard work. Don't default to `xhigh`/`max` (slower, costlier). |
-| Thinking Budget Tokens | **leave empty** | Manual thinking budgets return HTTP 400 on this model. Effort is the control. |
-| Temperature / Top P / Top K / penalties | **leave empty** | Non-default sampling values return HTTP 400 on current Claude models. |
+| Model | **DeepSeek-V4-Pro** (~0.5×) | The fastest measured of Qoder's strong coding models: about 100 tokens/sec in an October 2026 test, where it was quickest of the four flagships. It is also one of the cheapest. On Terminal-Bench 2.1 (agentic terminal work) it scores 87.9, against 88.3 for Kimi K3, 88.2 for GLM-5.3 and 86.6 for Qwen3.8-Max. |
+| Thinking | On, default effort | Multi-step coding needs reasoning. Raise the effort only for hard problems, because higher effort costs more credits. |
+| If it's missing from your selector | **Auto** (~0.5×, Qoder's recommended default) or **Fast** (~0.8×, tuned for quick responses on everyday code) | |
 
-**Why this model.** On the independent Vals Index (Sep 28, 2026), Claude Sonnet 5.5 scored 69.2% (#2 of 66). That is 0.5 points behind Claude Opus 5.5, at about $21 versus $33 per test run, and it ranked #1 on Vibe Code Bench. Third-party measurements put its output speed well above OpenAI's comparable GPT-6.1 Sol. Anthropic reports it beats Claude Sonnet 5 at `high` on most agentic coding evals while running at `medium`, typically at under a fifth of the cost. Pricing is $2 input / $10 output per million tokens, and cache reads are $0.20.
+**Evidence caveat:** the benchmark figures are mostly vendor-reported, the speed figure comes from a single test, and none of it was measured inside Qoder. DeepSeek prices also follow peak/off-peak rates. Use it for a day; if its code quality disappoints on your project, use §3.3.
 
-### 3.2 Per-context overrides
+### 3.2 Pick by task
 
-| Coder context | Model | Effort | Note |
-|---|---|---|---|
-| Root (chat default) | `claude-sonnet-5-5` | `medium` | As above |
-| General sub-agent | `claude-sonnet-5-5` | `medium` | Writes code, so keep the capable model |
-| Explore sub-agent | `claude-haiku-5-5` | `low` | Fastest and cheapest ($0.10 / $0.50 per MTok). Read-heavy search doesn't need more. Set this model's Context Limit to `200000` and Compression Threshold to `50`, so prompts stay around 100K tokens or less, where Haiku is 5× cheaper. |
-| Title generation | `claude-haiku-5-5` | `low` | Trivial task |
-| Compaction | `claude-sonnet-5-5` | `low` | Summary quality decides what the agent remembers |
-| Advisor (`chat-advisor` experiment) | `claude-opus-5-5` | `high` | A stronger reviewer for a Sonnet executor |
-| Computer use | `claude-sonnet-5-5` | — | See troubleshooting if it errors |
+| Task | Pick | Credits |
+|---|---|---|
+| Planning, architecture, hard multi-file bugs, security review | **Ultimate** tier | ~2× |
+| Building features, fixing bugs (default) | **DeepSeek-V4-Pro** | ~0.5× |
+| UI-heavy front-end work where the look matters most | **Kimi-K3.1-Pro**: Kimi K3 led Arena WebDev, but it's slower; K3.1 is untested independently | ~1.0× |
+| Quick questions, small edits, unit tests | **Efficient** tier (free for paid users for a limited time) or **DeepSeek-Flash** | 0× / ~0.1× |
+| Experts Mode (parallel experts) | **Auto**; Ultimate only for large tasks | 1.0× / 1.6× |
 
-### 3.3 When to switch the chat's model
+### 3.3 When to switch
 
-- **Claude Opus 5.5** (`claude-opus-5-5`, $4 / $20 per MTok, effort default `medium`; set `high` here). Use it for hard architecture decisions, stubborn multi-file bugs, and security or data-integrity reviews. Switch from the model dropdown for that chat only. The first turn after a switch is slower because prompt caches are per-model.
-- **Claude Fable 5.1** (`claude-fable-5-1`, $10 / $50 per MTok). Anthropic's most capable model, but single requests can run for minutes. Use it only for the largest long-horizon tasks where speed doesn't matter.
-- **Non-Anthropic providers:** pick that vendor's current mid-tier coding model, set reasoning effort explicitly to medium, and apply the same sub-agent split.
+- After two or three genuinely different failed attempts at the same problem (§9.6), switch that chat to **Ultimate**.
+- If DeepSeek-V4-Pro's code quality disappoints, try **Qwen3.8-Max** (~0.5×). It leads SWE-bench Pro (67.7 vs 55.4, Qwen-reported) but generated output at roughly half the speed in third-party measurements. **Auto** is the other fallback.
+- Avoid **GLM-5.3** when speed matters: it always reasons and produced the most output per task in testing.
 
-### 3.4 Troubleshooting
+### 3.4 Notes
 
-| Symptom | Fix |
-|---|---|
-| HTTP 400 mentioning `budget_tokens` / thinking type | Clear **Thinking Budget Tokens**; use Effort only. |
-| HTTP 400 mentioning `temperature` / `top_p` / `top_k` | Clear the sampling fields. |
-| Computer-use sub-agent 400 mentioning `computer_20251124` | Your Coder release predates this model's computer-use toolset. Upgrade Coder, or use Bedrock for the computer-use model. |
-| HTTP 400 about edited history / thinking blocks after compaction (accounts created on or after 31 Aug 2026) | Upgrade Coder. Newer Claude models reject replayed thinking after the history is edited. |
-| Chat stops with a refusal on legitimate security work | Add context (an authorized engagement, a defensive purpose), or switch that chat to Opus 5.5. |
-| Agent reports "done" without test output | Raise effort to `medium`/`high`; §7.1 step 7 requires real checks. |
+- Out of credits: Qoder falls back to free basic models with daily and monthly limits.
+- One source reported that DeepSeek retired V4 Pro from its own API in September 2026. Qoder still lists it; if it disappears from your selector, use Auto.
+- If the agent reports "done" without test output, point it at §7.1 step 7, or move up a tier.
 
 ---
 
